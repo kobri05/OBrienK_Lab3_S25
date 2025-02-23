@@ -1,3 +1,11 @@
+---
+title: "Lab 3"
+author: "Kate O'Brien"
+date: "February 23, 2025"
+embed-resources: true
+code-tools: true
+echo: true
+---
 # Part 1: Setup
 
 ## GitHub Workflow
@@ -39,7 +47,7 @@ In the code chunk below, load in the packages necessary for your analysis. You s
 
 ```{r}
 #| label: setup
-
+library(tidyverse) #Loaded in tidyverse to begin analysis
 ```
 
 # Part 2: Data Context
@@ -71,16 +79,16 @@ We are going to use the `read_csv()` function to load in the `surveys.csv` datas
 ```{r}
 #| label: load-data
 
-surveys <- read_csv("data/surveys.csv")
-#glimpse(surveys)
+surveys <- read_csv("data-raw/surveys.csv") #Load data into R and assign object
+glimpse(surveys) #Get an overview of data
 ```
 
 **1. What are the dimensions (# of rows and columns) of these data?**
-
+There are 15 columns and 30,463 rows.
 <!-- Run the commented code in the load-data chunk to address this question!  -->
 
 **2. What are the data types of the variables in this dataset?**
-
+The data types are 'character,' 'double,' and 'dates.' 
 <!-- Run the commented code in the load-data chunk to address this question!  -->
 
 # Part 3: Exploratory Data Analysis with **`ggplot2`**
@@ -106,36 +114,78 @@ Let's get started!
 
 ```{r}
 #| label: scatterplot
-
+ggplot(data = surveys,
+       mapping = aes(x = weight,
+                     y = hindfoot_length)) +
+  geom_point()
 ```
 
 We can see there are **a lot** of points plotted on top of each other. Let's try and modify this plot to extract more information from it.
 
 **4. Let's add transparency (`alpha`) to the points, to make the points more transparent and (possibly) easier to see.**
 
-<!-- Add code to the scatterplot you created for question 3! -->
+```{r}
+#| label: add transparency to scatterplot
+ggplot(data = surveys,
+       mapping = aes(x = weight,
+                     y = hindfoot_length,
+                     alpha = 0.3)) +
+  geom_point() #'alpha' makes points on scatterplot transparent and in theory easier to read.
+```
 
 Despite our best efforts there is still a substantial amount of overplotting occurring in our scatterplot. Let's try splitting the dataset into smaller subsets and see if that allows for us to see the trends a bit better.
 
 **6. Facet your scatterplot by `species`.**
 
-<!-- Add code to the scatterplot you created for question 3 (and modified for question 4)! -->
+```{r}
+#| label: facet scatterplot by species
+ggplot(data = surveys,
+       mapping = aes(x = weight,
+                     y = hindfoot_length,
+                     alpha = 0.3)) +
+  geom_point() +
+  facet_grid(~species)
+```
 
 **7. No plot is complete without axis labels and a title. Include reader friendly labels and a title to your plot.**
 
-<!-- Continue to modify the plot you originally created for question 3! -->
-
+```{r}
+#| label: add axis labels to scatterplot
+ggplot(data = surveys,
+       mapping = aes(x = weight,
+                     y = hindfoot_length,
+                     alpha = 0.3)) +
+  geom_point() +
+  facet_grid(~species) +
+  labs(x = 'Weight',
+       y = 'Hindfoot Length')
+```
 It takes a larger cognitive load to read text that is rotated. It is common practice in many journals and media outlets to move the $y$-axis label to the top of the graph under the title.
 
 **8. Specify your $y$-axis label to be empty and move the $y$-axis label into the subtitle.** 
 
-<!-- Continue to modify the plot you originally created for question 3! -->
+```{r}
+#| label: move y axis to subtitle
+ggplot(data = surveys,
+       mapping = aes(x = weight,
+                     y = hindfoot_length,
+                     alpha = 0.3,
+                     color = weight)) +
+  geom_point() +
+  facet_grid(~species) +
+  labs(x = 'Weight',
+       y = '',
+       title = 'Relationship Between Weight and Hindfoot Length by Species',
+       subtitle = 'Hindfoot Length')
+```
 
 ## Boxplots
 
 ```{r}
 #| label: boxplot
-
+ggplot(data = surveys,
+       mapping = aes(y= weight, x = species)) +
+  geom_boxplot()
 
 ```
 
@@ -145,31 +195,72 @@ A fundamental complaint of boxplots is that they do not plot the raw data. Howev
 
 **10. Add another layer to your previous plot that plots each observation using `geom_point()`.**
 
-<!-- Modify the plot you made for question 9! -->
-
+```{r}
+#| label: boxplot with individual points
+ggplot(data = surveys,
+       mapping = aes(y = weight, x = species)) +
+  geom_boxplot() +
+  geom_point()
+```
 Alright, this should look less than optimal. Your points should appear rather stacked on top of each other. To make them less stacked, we need to jitter them a bit, using `geom_jitter()`.
 
 **11. Remove the previous layer and include a `geom_jitter()` layer instead.**
 
-<!-- Continue to modify the plot you made for question 9! -->
+```{r}
+#| label: boxplot with points
+ggplot(data = surveys,
+       mapping = aes(y = weight, x = species)) +
+  geom_boxplot() +
+  geom_jitter()
+```
 
 That should look a bit better! But its really hard to see the points when everything is black.
 
 **12. Set the `color` aesthetic in `geom_jitter()` to change the color of the points and add set the `alpha` aesthetic to add transparency.** You are welcome to use whatever color you wish! Some of my favorites are "springgreen4" and "steelblue4". Check them out on [R Charts](https://r-charts.com/colors/)
 
-<!-- Continue to modify the plot you made for question 9! -->
+```{r}
+#| label: boxplot with better points
+ggplot(data = surveys,
+       mapping = aes(y = weight, 
+                     x = species)) +
+  geom_boxplot() +
+  geom_jitter(mapping = aes(color= weight),
+              alpha = 0.3,
+              color = 'cadetblue')
+```
 
 Great! Now that you can see the points, you should notice something odd: there are two colors of points still being plotted. Some of the observations are being plotted twice, once from `geom_boxplot()` as outliers and again from `geom_jitter()`!
 
 **13. Inspect the help file for `geom_boxplot()` and see how you can remove the outliers from being plotted by `geom_boxplot()`. Make this change in your code!**
 
-<!-- Continue to modify the plot you made for question 9! -->
+```{r}
+#| label: boxplot with better points AND more visible
+ggplot(data = surveys,
+       mapping = aes(y = weight, 
+                     x = species)) +
+  geom_boxplot(outliers = FALSE) +
+  geom_jitter(mapping = aes(color= weight),
+              alpha = 0.3,
+              color = 'cadetblue')
+```
 
 Some small changes can make **big** differences to plots. One of these changes are better labels for a plot's axes and legend.
 
 **14. Modify the $x$-axis and $y$-axis labels to describe what is being plotted. Be sure to include any necessary units! You might also be getting overlap in the species names -- use `theme(axis.text.x = ____)` or `theme(axis.text.y = ____)` to turn the species axis labels 45 degrees.**
 
-<!-- Continue to modify the plot you made for question 10! -->
+```{r}
+#| label: boxplot added labels
+ggplot(data = surveys,
+       mapping = aes(y = weight, 
+                     x = species)) +
+  geom_boxplot(outliers = FALSE) +
+  geom_jitter(mapping = aes(color= weight),
+              alpha = 0.3,
+              color = 'cadetblue') +
+  labs(x = 'Species',
+       y = 'Weight Distribution') +
+  theme(axis.text.x = element_text(angle = 45)) #used https://www.sthda.com/english/wiki/ggplot2-axis-ticks-a-guide-to-customize-tick-marks-and-labels as a resource to roate text :)
+```
 
 Some people (and journals) prefer for boxplots to be stacked with a specific orientation! Let's practice changing the orientation of our boxplots.
 
@@ -177,7 +268,16 @@ Some people (and journals) prefer for boxplots to be stacked with a specific ori
 
 ```{r}
 #| label: rotated-boxplot
-
+ggplot(data = surveys,
+       mapping = aes(x = weight, 
+                     y = species)) +
+  geom_boxplot(outliers = FALSE) +
+  geom_jitter(mapping = aes(color= weight),
+              alpha = 0.3,
+              color = 'cadetblue') +
+  labs(x = 'Species',
+       y = 'Weight Distribution')
+```
 ```
 
 Notice how vertically stacked boxplots make the species labels more readable than horizontally stacked boxplots (even when the axis labels are rotated). This is good practice!
